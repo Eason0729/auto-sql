@@ -1,4 +1,5 @@
 import { type PageProps } from "$fresh/server.ts";
+
 export default function App({ Component }: PageProps) {
   return (
     <html>
@@ -8,7 +9,7 @@ export default function App({ Component }: PageProps) {
         <title>auto-sql</title>
         <link rel="stylesheet" href="/styles.css" />
       </head>
-      <body f-client-nav>
+      <body>
         <div class="max-w-screen-md xl:max-w-screen-lg w-full mx-auto flex flex-col items-center justify-center p-4 pt-8">
           <Component />
         </div>

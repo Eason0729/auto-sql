@@ -10,7 +10,7 @@ export const duckdbDef: ChatCompletionTool = {
   function: {
     name: "execute_sql_duckdb",
     description: [
-      "Get the execution result for an sql query in duckdb.",
+      "Get the at most 8 rows of execution result for an sql query in duckdb.",
       "Call this whenever you need to run some SQL, ",
       "for example when a user asks 'What is the sales distribution by region?'",
       "\n\nAdditional syntax:\n",
@@ -63,7 +63,7 @@ export async function duckdb(request: string): Promise<string> {
 
   if (sql.includes("LOAD ")) return "Loaded successfully";
 
-  const data = await Transform(query, 10);
+  const data = await Transform(query, 8);
 
   return JSON.stringify(
     data,

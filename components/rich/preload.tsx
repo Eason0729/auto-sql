@@ -1,9 +1,10 @@
 import { JSX } from "preact/jsx-runtime";
 import { ExecuteRaw, Transform } from "../../completion/duckdb.ts";
-import Chart, { ChartType } from "../../islands/Chart.tsx";
+import Chart from "../../islands/Chart.tsx";
+import { ChartType } from "../../islands/Chart.tsx";
 
-export default async function SQLChart(
-  { type, sql }: { type: ChartType; sql: string },
+async function SQLChart(
+  { type, sql, title }: { type: ChartType; sql: string; title?: string },
 ) {
   // TODO: stream the data
   const query = await ExecuteRaw(sql);
@@ -13,7 +14,7 @@ export default async function SQLChart(
     y: number;
   }[];
 
-  return <Chart data={data} type={type} />;
+  return <Chart data={data} type={type} title={title} />;
 }
 
 export async function preload(raw: string): Promise<Map<string, JSX.Element>> {
@@ -35,7 +36,11 @@ export async function preload(raw: string): Promise<Map<string, JSX.Element>> {
           /<type>([\s\S]*?)<\/type>/,
         )![0].replaceAll("<type>", "").replaceAll("</type>", "") as ChartType;
 
-        element = await SQLChart({ type: kind, sql });
+        const title = chartContent.match(
+          /<title>([\s\S]*?)<\/title>/,
+        )?.[0].replaceAll("<title>", "").replaceAll("</title>", "");
+
+        element = await SQLChart({ type: kind, sql, title });
       } catch (e) {
         console.log(e);
       }

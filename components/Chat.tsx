@@ -11,18 +11,21 @@ export default function Chat({ children }: {
           {children}
         </Partial>
       </div>
-      <form class="flex w-full space-x-2" method="POST">
-        <input
-          type="text"
+      <form
+        class="flex w-full space-x-2 items-center"
+        method="POST"
+        f-client-nav
+      >
+        <textarea
           placeholder="Enter Message"
-          class="flex-grow px-4 py-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none"
+          class="flex-grow px-4 py-2 max-h-32 h-10 border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none resize-y"
           name="message"
-          value=""
           required
-        />
+        >
+        </textarea>
         <button
           type="submit"
-          class="w-24 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition duration-200"
+          class="w-24 px-4 py-2 h-fit bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition duration-200"
         >
           Send
         </button>

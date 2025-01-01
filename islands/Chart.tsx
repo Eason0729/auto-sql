@@ -23,6 +23,7 @@ export default function Chart(
   props: {
     type: ChartType;
     data: { label?: string; x: string | number; y: number }[];
+    title?: string;
   },
 ) {
   if (!IS_BROWSER) return <div class="bg-slate-700 text-white">Loading</div>;
@@ -60,13 +61,30 @@ export default function Chart(
         labels: xAxisLabels,
         datasets,
       },
-      options: {},
+      options: {
+        aspectRatio: props.type === "pie" ? 1 : 1.55,
+      },
     });
   }, []);
+
+  function downloadImage() {
+    const dataURL = chartRef.current!.toDataURL("image/png");
+    const newTab = globalThis.window.open("about:blank", "image from canvas");
+    newTab!.document.write("<img src='" + dataURL + "' alt='from canvas'/>");
+  }
 
   return (
     <div class="bg-white rounded-lg p-4 my-3 shadow-lg">
       <canvas ref={chartRef}></canvas>
+      <div class="flex justify-between items-center mt-2">
+        <h2 class="text-lg font-semibold pl-2">{props.title}</h2>
+        <button
+          onClick={downloadImage}
+          class="bg-blue-500 hover:bg-blue-600 text-white text-sm font-bold py-2 px-3 rounded"
+        >
+          Download Image
+        </button>
+      </div>
     </div>
   );
 }

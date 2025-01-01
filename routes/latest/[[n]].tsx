@@ -12,7 +12,6 @@ export default async function Latest(_: FreshContext, props: PageProps) {
   const messages = db.prepare(
     `SELECT text, user FROM messages ORDER BY created_at DESC LIMIT ${n}`,
   ).values();
-  messages.reverse();
 
   let preloadMap = new Map<string, JSX.Element>();
   await Promise.all(messages.map(async ([text]) => {

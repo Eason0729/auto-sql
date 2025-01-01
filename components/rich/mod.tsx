@@ -16,7 +16,7 @@ function ToolRequestBlock({ request }: { request: ToolRequest }) {
       </div>
     );
   }
-  return <></>;
+  return <div>Unknown tool request</div>;
 }
 
 function ToolResponseBlock({ response }: { response: ToolResponse }) {
