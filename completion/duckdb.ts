@@ -58,7 +58,7 @@ export async function duckdb(request: string): Promise<string> {
   try {
     query = await conn.run(sql);
   } catch (e) {
-    return e.message;
+    return (e as { message: string }).message;
   }
 
   if (sql.includes("LOAD ")) return "Loaded successfully";

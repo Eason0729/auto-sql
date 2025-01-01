@@ -1,11 +1,11 @@
 import { Handlers } from "$fresh/server.ts";
-import { JSX } from "preact/jsx-runtime";
 import completion from "../completion/mod.ts";
 import Chat from "../components/Chat.tsx";
 import Message from "../components/Message.tsx";
 import Rich from "../components/rich/mod.tsx";
 import { db } from "../db.ts";
 import { preload } from "../components/rich/preload.tsx";
+import { ChartProps } from "../islands/Chart.tsx";
 
 interface Data {
   message: string;
@@ -34,9 +34,10 @@ export default async function Home() {
     "SELECT text, user FROM messages ORDER BY created_at ASC",
   ).values();
 
-  let preloadMap = new Map<string, JSX.Element>();
+  const preloadMap: { [key: string]: ChartProps } = {};
   await Promise.all(messages.map(async ([text]) => {
-    preloadMap = new Map([...preloadMap, ...await preload(text)]);
+    const map = await preload(text);
+    Object.assign(preloadMap, map);
   }));
 
   return (

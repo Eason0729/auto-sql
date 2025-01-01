@@ -3,6 +3,7 @@ import Table from "./Table.tsx";
 import Codeblock from "./Codeblock.tsx";
 import Markdown from "./Markdown.tsx";
 import { JSX } from "preact/jsx-runtime";
+import Chart, { ChartProps } from "../../islands/Chart.tsx";
 
 function ToolRequestBlock({ request }: { request: ToolRequest }) {
   if (request.name === "execute_sql_duckdb") {
@@ -38,7 +39,10 @@ function ToolResponseBlock({ response }: { response: ToolResponse }) {
 }
 
 export default function Rich(
-  { content, preload }: { content: string; preload?: Map<string, JSX.Element> },
+  { content, preload }: {
+    content: string;
+    preload?: { [key: string]: ChartProps };
+  },
 ) {
   try {
     const jsonContent: { kind: string } | ToolRequest | ToolResponse = JSON
@@ -61,10 +65,12 @@ export default function Rich(
 
   const chartRegex = /<chart>([\s\S]*?)<\/chart>/;
   const chartMatch = content.match(chartRegex);
-  const charts: JSX.Element[] = [];
+  const charts: (JSX.Element | null)[] = [];
   if (chartMatch && preload) {
     const chartContent = chartMatch[1];
-    charts.push(preload.get(chartContent) ?? <div>SQL not preloaded</div>);
+    charts.push(
+      preload[chartContent] ? <Chart {...preload[chartContent]} /> : null,
+    );
   }
 
   const contents = content.split(/<chart>[\s\S]*?<\/chart>/g);

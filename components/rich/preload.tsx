@@ -1,11 +1,10 @@
-import { JSX } from "preact/jsx-runtime";
 import { ExecuteRaw, Transform } from "../../completion/duckdb.ts";
-import Chart from "../../islands/Chart.tsx";
+import { ChartProps } from "../../islands/Chart.tsx";
 import { ChartType } from "../../islands/Chart.tsx";
 
 async function SQLChart(
   { type, sql, title }: { type: ChartType; sql: string; title?: string },
-) {
+): Promise<ChartProps> {
   // TODO: stream the data
   const query = await ExecuteRaw(sql);
   const data = await Transform(query) as {
@@ -14,18 +13,19 @@ async function SQLChart(
     y: number;
   }[];
 
-  return <Chart data={data} type={type} title={title} />;
+  return { type, data, title };
 }
 
-export async function preload(raw: string): Promise<Map<string, JSX.Element>> {
+export async function preload(
+  raw: string,
+): Promise<{ [key: string]: ChartProps }> {
   const chartRegex = /<chart>([\s\S]*?)<\/chart>/;
   const chartParts = raw.match(chartRegex);
 
-  const map = new Map<string, JSX.Element>();
+  const map = new Map<string, ChartProps>();
 
   if (chartParts) {
-    (await Promise.all(chartParts.map(async (chartContent) => {
-      let element: JSX.Element = <div>Fail to load chart.</div>;
+    await Promise.all(chartParts.map(async (chartContent) => {
       try {
         const sql = chartContent.match(/<sql>([\s\S]*?)<\/sql>/)![0].replaceAll(
           "<sql>",
@@ -40,18 +40,12 @@ export async function preload(raw: string): Promise<Map<string, JSX.Element>> {
           /<title>([\s\S]*?)<\/title>/,
         )?.[0].replaceAll("<title>", "").replaceAll("</title>", "");
 
-        element = await SQLChart({ type: kind, sql, title });
+        map.set(chartContent, await SQLChart({ type: kind, sql, title }));
       } catch (e) {
         console.log(e);
       }
-      return {
-        key: chartContent,
-        element,
-      };
-    })))
-      .filter((x) => !!x)
-      .forEach(({ key, element }) => map.set(key, element));
+    }));
   }
 
-  return map;
+  return Object.fromEntries(map);
 }

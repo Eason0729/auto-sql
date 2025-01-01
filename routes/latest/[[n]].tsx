@@ -3,8 +3,8 @@ import Message from "../../components/Message.tsx";
 import { db } from "../../db.ts";
 import { FreshContext, PageProps } from "$fresh/server.ts";
 import Rich from "../../components/rich/mod.tsx";
-import { JSX } from "preact/jsx-runtime";
 import { preload } from "../../components/rich/preload.tsx";
+import { ChartProps } from "../../islands/Chart.tsx";
 
 export default async function Latest(_: FreshContext, props: PageProps) {
   const n = parseInt(props.params.n) ?? 2;
@@ -13,9 +13,12 @@ export default async function Latest(_: FreshContext, props: PageProps) {
     `SELECT text, user FROM messages ORDER BY created_at DESC LIMIT ${n}`,
   ).values();
 
-  let preloadMap = new Map<string, JSX.Element>();
+  messages.reverse();
+
+  const preloadMap: { [key: string]: ChartProps } = {};
   await Promise.all(messages.map(async ([text]) => {
-    preloadMap = new Map([...preloadMap, ...await preload(text)]);
+    const map = await preload(text);
+    Object.assign(preloadMap, map);
   }));
 
   return (

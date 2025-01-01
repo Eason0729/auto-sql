@@ -18,13 +18,15 @@ function groupBy<T, K>(list: T[], keyGetter: (input: T) => K): Map<K, T[]> {
   return map;
 }
 
+export interface ChartProps {
+  type: ChartType;
+  data: { label?: string; x: string | number; y: number }[];
+  title?: string;
+}
+
 // we cannot send prototype objects to the browser, so we send pure json
 export default function Chart(
-  props: {
-    type: ChartType;
-    data: { label?: string; x: string | number; y: number }[];
-    title?: string;
-  },
+  props: ChartProps,
 ) {
   if (!IS_BROWSER) return <div class="bg-slate-700 text-white">Loading</div>;
 
