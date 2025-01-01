@@ -1,10 +1,12 @@
 import Chat from "../../components/Chat.tsx";
 import Message from "../../components/Message.tsx";
 import { db } from "../../db.ts";
-import { PageProps } from "$fresh/server.ts";
-import MessageBox from "../../components/MessageBox.tsx";
+import { FreshContext, PageProps } from "$fresh/server.ts";
+import Rich from "../../components/rich/mod.tsx";
+import { JSX } from "preact/jsx-runtime";
+import { preload } from "../../components/rich/preload.tsx";
 
-export default function Latest(props: PageProps) {
+export default async function Latest(_: FreshContext, props: PageProps) {
   const n = parseInt(props.params.n) ?? 2;
 
   const messages = db.prepare(
@@ -12,11 +14,16 @@ export default function Latest(props: PageProps) {
   ).values();
   messages.reverse();
 
+  let preloadMap = new Map<string, JSX.Element>();
+  await Promise.all(messages.map(async ([text]) => {
+    preloadMap = new Map([...preloadMap, ...await preload(text)]);
+  }));
+
   return (
     <Chat>
       {messages.map(([text, user]) => (
         <Message user={user}>
-          <MessageBox content={text} />
+          <Rich content={text} preload={preloadMap} />
         </Message>
       ))}
     </Chat>

@@ -2,6 +2,7 @@ import { ToolRequest, ToolResponse } from "../../db.ts";
 import Table from "./Table.tsx";
 import Codeblock from "./Codeblock.tsx";
 import Markdown from "./Markdown.tsx";
+import { JSX } from "preact/jsx-runtime";
 
 function ToolRequestBlock({ request }: { request: ToolRequest }) {
   if (request.name === "execute_sql_duckdb") {
@@ -36,7 +37,9 @@ function ToolResponseBlock({ response }: { response: ToolResponse }) {
   );
 }
 
-export default function Rich({ content }: { content: string }) {
+export default function Rich(
+  { content, preload }: { content: string; preload?: Map<string, JSX.Element> },
+) {
   try {
     const jsonContent: { kind: string } | ToolRequest | ToolResponse = JSON
       .parse(content);
@@ -56,9 +59,24 @@ export default function Rich({ content }: { content: string }) {
     // deno-lint-ignore no-empty
   } catch (_) {}
 
+  const chartRegex = /<chart>([\s\S]*?)<\/chart>/;
+  const chartMatch = content.match(chartRegex);
+  const charts: JSX.Element[] = [];
+  if (chartMatch && preload) {
+    const chartContent = chartMatch[1];
+    charts.push(preload.get(chartContent) ?? <div>SQL not preloaded</div>);
+  }
+
+  const contents = content.split(/<chart>[\s\S]*?<\/chart>/g);
+
   return (
     <div class="px-4 py-2 rounded-lg">
-      <Markdown content={content} />
+      {contents.map((c, i) => (
+        <div>
+          <Markdown content={c} />
+          {charts[i] ?? null}
+        </div>
+      ))}
     </div>
   );
 }

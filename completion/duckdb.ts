@@ -1,6 +1,6 @@
 import { ChatCompletionTool } from "openai/resource";
 
-import { DuckDBInstance, DuckDBValue } from "duckdb";
+import { DuckDBInstance, DuckDBMaterializedResult, DuckDBValue } from "duckdb";
 
 const db = await DuckDBInstance.create("store.sqlite3");
 const conn = await db.connect();
@@ -33,8 +33,22 @@ export const duckdbDef: ChatCompletionTool = {
   },
 };
 
+export async function Transform(
+  query: DuckDBMaterializedResult,
+  maxRows: number = 1000,
+) {
+  const columns = query.columnNames();
+  const rows = await query.getRows();
+  return rows.map((row) => {
+    const map: { [key: string]: DuckDBValue } = {};
+    row.map((val, idx) => {
+      map[columns[idx]] = val;
+    });
+    return map;
+  }).slice(0, maxRows);
+}
+
 export async function duckdb(request: string): Promise<string> {
-  const MAX_ROWS = 10;
   let sql = JSON.parse(request).sql;
   if (sql.includes("LOAD tpch")) sql += ";CALL dbgen(sf = 1);";
 
@@ -49,22 +63,20 @@ export async function duckdb(request: string): Promise<string> {
 
   if (sql.includes("LOAD ")) return "Loaded successfully";
 
-  const columns = query.columnNames();
-  const rows = await query.getRows();
-  const data = rows.map((row) => {
-    const map: { [key: string]: DuckDBValue } = {};
-    row.map((val, idx) => {
-      map[columns[idx]] = val;
-    });
-    return map;
-  }).slice(0, MAX_ROWS);
+  const data = await Transform(query, 10);
 
   return JSON.stringify(
     data,
     (_, v) => typeof v === "bigint" ? v.toString() : v,
   );
 }
-
-export function duckdbExecuteRaw(sql: string) {
-  conn.run(sql);
+export async function ExecuteRaw(sql: string) {
+  const conn = await db.connect();
+  let query;
+  try {
+    query = await conn.run(sql);
+  } finally {
+    conn.close();
+  }
+  return query;
 }

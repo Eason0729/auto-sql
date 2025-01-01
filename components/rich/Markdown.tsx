@@ -12,6 +12,7 @@ export default function Markdown(
       </Head>
       <div
         dangerouslySetInnerHTML={{ __html: render(props.content) }}
+        class="markdown"
         {...props}
       >
       </div>

@@ -1,6 +1,6 @@
 import { Database } from "sqlite";
 
-export const db = new Database("database.db");
+export const db = new Database("database.sqlite3");
 db.run(
   [
     "CREATE TABLE IF NOT EXISTS messages (",

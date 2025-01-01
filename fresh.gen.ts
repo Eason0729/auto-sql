@@ -6,7 +6,9 @@ import * as $_404 from "./routes/_404.tsx";
 import * as $_app from "./routes/_app.tsx";
 import * as $index from "./routes/index.tsx";
 import * as $latest_n_ from "./routes/latest/[[n]].tsx";
+import * as $Chart from "./islands/Chart.tsx";
 import * as $Counter from "./islands/Counter.tsx";
+import * as $Hide from "./islands/Hide.tsx";
 import type { Manifest } from "$fresh/server.ts";
 
 const manifest = {
@@ -17,7 +19,9 @@ const manifest = {
     "./routes/latest/[[n]].tsx": $latest_n_,
   },
   islands: {
+    "./islands/Chart.tsx": $Chart,
     "./islands/Counter.tsx": $Counter,
+    "./islands/Hide.tsx": $Hide,
   },
   baseUrl: import.meta.url,
 } satisfies Manifest;
